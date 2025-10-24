@@ -156,9 +156,19 @@ router.get('/signup', function(req, res, next) {
  * successfully created, the user is logged in.
  */
 router.post('/signup', function(req, res, next) {
+  // ✅ Security Control: Input Validation
+  if (!req.body.username || req.body.username.length < 3) {
+    return res.status(400).send('Username must be at least 3 characters');
+  }
+  
+  if (!req.body.password || req.body.password.length < 6) {
+    return res.status(400).send('Password must be at least 6 characters');
+  }
+
   var salt = crypto.randomBytes(16);
   crypto.pbkdf2(req.body.password, salt, 310000, 32, 'sha256', function(err, hashedPassword) {
     if (err) { return next(err); }
+    
     db.run('INSERT INTO users (username, hashed_password, salt) VALUES (?, ?, ?)', [
       req.body.username,
       hashedPassword,
